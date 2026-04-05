@@ -67,3 +67,65 @@ Additionally, make sure that the following extensions are enabled in your PHP:
 - json (enabled by default - don't turn it off)
 - [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
 - [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+
+
+
+CI4, supaya bisa diakses tanpa php spark serve
+
+1) Letakkan project di web root Apache
+
+C:\xampp\htdocs\sistem-spp\
+
+2) Atur baseURL dan indexPage
+
+Di app/Config/App.php:
+
+public string $baseURL = 'http://localhost/sistem-spp/';
+public string $indexPage = '';
+
+Atau di .env:
+
+app.baseURL = 'http://localhost/sistem-spp/'
+
+3) Aktifkan mod_rewrite dan AllowOverride All
+
+Di Apache, CI4 mengandalkan mod_rewrite untuk URL tanpa index.php, dan AllowOverride All agar .htaccess terbaca. Dokumentasi resmi memberi contoh LoadModule rewrite_module ... dan <Directory ...> AllowOverride All.
+
+Kalau di XAMPP, cek file:
+
+apache/conf/httpd.conf
+
+Pastikan ada ini:
+
+LoadModule rewrite_module modules/mod_rewrite.so
+
+Lalu bagian htdocs kira-kira seperti ini:
+
+<Directory "C:/xampp/htdocs">
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Require all granted
+</Directory>
+
+4) Ubah public/.htaccess
+
+Buka file:
+
+C:\xampp\htdocs\sistem-spp\public\.htaccess
+
+Isi saja minimal seperti ini:
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /sistem-spp/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php/$1 [L,QSA]
+</IfModule>
+
+
+5) Restart Apache
+
+Setelah itu restart Apache dari XAMPP, lalu coba lagi:
+
+http://localhost/sistem-spp/login
